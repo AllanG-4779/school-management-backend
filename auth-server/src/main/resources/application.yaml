@@ -1,0 +1,9 @@
+server:
+  port: 5698
+spring:
+  application:
+    name: auth-server
+  jpa:
+    generate-ddl: true
+    show-sql: true
+
