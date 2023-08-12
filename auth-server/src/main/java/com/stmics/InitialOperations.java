@@ -20,6 +20,8 @@ public class InitialOperations {
     public void createSystemAccount() {
         AppUser appUser = AppUser.builder()
                 .username("sys_admin")
+                .phone("254796407365")
+                .email("allang4779@gmail.com")
                 .password(passwordEncoder.encode("cnd80751xh"))
                 .profileId(1L)
                 .build();

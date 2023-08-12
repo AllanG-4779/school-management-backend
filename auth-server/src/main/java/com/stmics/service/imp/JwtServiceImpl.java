@@ -50,4 +50,16 @@ public class JwtServiceImpl implements JwtService {
                 .build();
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
     }
+
+    @Override
+    public String generateOTP() {
+        String digits = "0123456789";
+        Random random = new SecureRandom();
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < 6; i++) {
+            int index = random.nextInt(digits.length());
+            stringBuilder.append(digits.charAt(index));
+        }
+        return stringBuilder.toString();
+    }
 }

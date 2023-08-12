@@ -15,6 +15,8 @@ public class AppUser {
     private Long id;
     private String username;
     private String password;
+    private String phone;
+    private String email;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean isActive;
@@ -26,4 +28,5 @@ public class AppUser {
     private LocalDateTime otpExpiry;
     private Boolean is2FaEnabled;
     private Long profileId;
+    private Integer passwordResetAttempts;
 }

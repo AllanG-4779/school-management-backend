@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS tb_authentication (
     id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(255) NOT NULL UNIQUE NOT NULL,
     password VARCHAR(512) NOT NULL,
+    phone VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     is_active BOOLEAN DEFAULT FALSE,
@@ -13,5 +15,6 @@ CREATE TABLE IF NOT EXISTS tb_authentication (
     otp_token VARCHAR(10),
     otp_expiry TIMESTAMP,
     is2_fa_enabled BOOLEAN DEFAULT TRUE,
-    profile_id BIGINT NOT NULL
+    profile_id BIGINT NOT NULL,
+    password_reset_attempts int DEFAULT 0
 )
