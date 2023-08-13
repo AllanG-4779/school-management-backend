@@ -2,7 +2,7 @@ package com.stmics.service;
 
 import com.stmics.dto.LoginRequest;
 import com.stmics.dto.PasswordReset;
-import com.stmics.dto.UniversalResponse;
+import org.shared.dto.UniversalResponse;
 import reactor.core.publisher.Mono;
 
 public interface AuthenticationService {

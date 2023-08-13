@@ -5,6 +5,7 @@ import com.stmics.repository.AuthenticationRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.shared.Constants;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @RequiredArgsConstructor
 public class InitialOperations {
+
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationRepository appUserRepository;
 
@@ -32,4 +34,5 @@ public class InitialOperations {
                     return Mono.just(appUser1);
                 }).subscribe();
     }
+
 }

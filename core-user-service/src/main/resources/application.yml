@@ -1,0 +1,16 @@
+server:
+  port: 5700
+spring:
+  application:
+    name: user-service
+  flyway:
+    password: cnd80751xh
+    user: allang
+    url: jdbc:mysql://localhost:3307/school_management_user?allowPublicKeyRetrieval=true
+    locations: classpath:db/migration
+  r2dbc:
+    username: allang
+    password: cnd80751xh
+    url: r2dbc:mysql://localhost:3307/school_management_user
+  jackson:
+    property-naming-strategy: SNAKE_CASE

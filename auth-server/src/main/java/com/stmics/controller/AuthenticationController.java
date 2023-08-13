@@ -2,7 +2,7 @@ package com.stmics.controller;
 
 import com.stmics.dto.LoginRequest;
 import com.stmics.dto.PasswordReset;
-import com.stmics.dto.UniversalResponse;
+import org.shared.dto.UniversalResponse;
 import com.stmics.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
