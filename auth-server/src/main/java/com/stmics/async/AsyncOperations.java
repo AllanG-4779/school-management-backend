@@ -2,7 +2,7 @@ package com.stmics.async;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.stmics.dto.UserDto;
+import org.shared.dto.UserDto;
 import com.stmics.model.AppUser;
 import com.stmics.repository.AuthenticationRepository;
 import lombok.RequiredArgsConstructor;

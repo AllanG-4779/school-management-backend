@@ -1,4 +1,4 @@
-package com.stmics.dto;
+package org.shared.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

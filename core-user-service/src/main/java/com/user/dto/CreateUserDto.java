@@ -23,6 +23,7 @@ public class CreateUserDto {
     private String phone;
 
     @Size(min = 10, max = 16, message = "National ID too short")
+    @NotNull(message = "National ID cannot be null")
     private String nationalId;
 
     @NotNull(message = "Profile ID cannot be null")
@@ -31,5 +32,7 @@ public class CreateUserDto {
     @NotBlank(message = "Personal ID cannot be blank")
     @NotNull(message = "personal ID is required")
     private String personalId;
-
+    @Pattern(regexp = "^[1-9]{4}-(0?[1-9]|1[1-2])-(0?[1-9]|[1-3][0-9])$", message = "Invalid date format")
+    @NotNull(message = "Date cannot be null")
+    private String dob;
 }

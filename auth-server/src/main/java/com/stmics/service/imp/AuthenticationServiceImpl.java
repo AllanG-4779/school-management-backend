@@ -9,6 +9,8 @@ import com.stmics.service.AuthenticationService;
 import com.stmics.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.shared.dto.NotificationDto;
+import org.shared.dto.OtpSmsBody;
 import org.shared.dto.UniversalResponse;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -21,8 +23,9 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 
-import static com.stmics.utils.Constants.NOTIFICATION_SMS;
-import static com.stmics.utils.Constants.SMS_TOPIC;
+import static org.shared.utils.Constants.NOTIFICATION_SMS;
+import static org.shared.utils.Constants.SMS_TOPIC;
+import static org.shared.utils.GeneralUtils.generateOTP;
 
 @Service
 @Slf4j
@@ -80,7 +83,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                                 .timestamp(LocalDateTime.now())
                                 .build());
                     }
-                    String otp = jwtService.generateOTP();
+                    String otp = generateOTP();
                     appUser.setPasswordResetToken(otp);
                     appUser.setPasswordResetExpiry(LocalDateTime.now().plusMinutes(5));
 

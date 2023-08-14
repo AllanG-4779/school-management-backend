@@ -2,10 +2,7 @@ package com.user.model;
 
 import lombok.*;
 import org.shared.db.BaseEntity;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-
-import java.sql.Date;
 
 @Table(name = "personal_information")
 @AllArgsConstructor
@@ -21,5 +18,8 @@ public class PersonalInformation extends BaseEntity {
     private String email;
     private Long profileId;
     private String personalId;
-    private Date dob;
+    private String dob;
+    private Boolean activated;
+    private Boolean phoneConfirmed;
+    private Boolean emailConfirmed;
 }

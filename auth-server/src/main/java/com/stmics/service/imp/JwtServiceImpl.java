@@ -9,11 +9,9 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Random;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,15 +49,5 @@ public class JwtServiceImpl implements JwtService {
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
     }
 
-    @Override
-    public String generateOTP() {
-        String digits = "0123456789";
-        Random random = new SecureRandom();
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < 6; i++) {
-            int index = random.nextInt(digits.length());
-            stringBuilder.append(digits.charAt(index));
-        }
-        return stringBuilder.toString();
-    }
+
 }

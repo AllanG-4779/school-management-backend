@@ -1,5 +1,6 @@
 package com.user.controller;
 
+import com.user.dto.ActivateAccount;
 import com.user.dto.CreateUserDto;
 import com.user.service.UserService;
 import jakarta.validation.Valid;
@@ -33,5 +34,17 @@ public class UserController {
                         .build())));
 
 
+    }
+
+    @PostMapping("/activate")
+    public Mono<ResponseEntity<UniversalResponse>> activateAccount(@Valid @RequestBody Mono<ActivateAccount> accountActivation) {
+        return accountActivation.flatMap(account -> userService.activateAccount(account)
+                        .flatMap(response -> Mono.just(ResponseEntity.status(201).body(response))))
+                .onErrorResume(WebExchangeBindException.class, err -> Mono.just(ResponseEntity.status(400).body(UniversalResponse.builder()
+                        .message("Request validation failed")
+                        .error("true")
+                        .status("400")
+                        .data(ValidationMessageExtractor.extractErrors(err))
+                        .build())));
     }
 }

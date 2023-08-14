@@ -14,3 +14,13 @@ spring:
     url: r2dbc:mysql://localhost:3307/school_management_user
   jackson:
     property-naming-strategy: SNAKE_CASE
+
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKER:localhost:9092}
+
+      binders:
+        producer-in-0:
+
