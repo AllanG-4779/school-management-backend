@@ -2,6 +2,8 @@ name: auth-server-deployment
 on:
   push:
     branches: [master]
+    paths:
+      - "auth-server/**"
 jobs:
   build-base-image:
     runs-on: ubuntu-latest
