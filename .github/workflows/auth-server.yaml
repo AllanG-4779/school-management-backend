@@ -4,6 +4,7 @@ on:
     branches: [master]
     paths:
       - "auth-server/**"
+      - ".github/workflows/auth-server.yaml"
 jobs:
   build-base-image:
     runs-on: ubuntu-latest
