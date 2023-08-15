@@ -20,7 +20,7 @@ jobs:
       - name: Push base image
         run:
           docker push ${{ secrets.DOCKER_USERNAME }}/auth-server-builder:latest
-    build-and-push-image:
+  build-and-push-image:
       runs-on: ubuntu-latest
       needs: build-base-image
       steps:
