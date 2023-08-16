@@ -11,7 +11,7 @@ jobs:
      steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Build Parent Image
+      - name: Build Parent Images
         run: |
           docker build -t school-manager-parent:latest -f parent.Dockerfile .
       - name: Login to DockerHub
