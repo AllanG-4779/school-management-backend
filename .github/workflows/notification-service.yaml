@@ -1,10 +1,10 @@
-name: auth-server-deployment
+name: Notification Service
 on:
   push:
-    branches: [master]
+    branches: [ master ]
     paths:
-      - "auth-server/**"
-      - ".github/workflows/auth-server.yaml"
+      - "notification-service/**"
+      - ".github/workflows/notification-service.yaml"
 jobs:
   build-base-image:
     runs-on: ubuntu-latest
@@ -12,9 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build base image
-        run: |        
-            cd auth-server
-            docker build -t dockerallang/school-management-auth-server:latest .
+        run: |
+          cd notification-service
+          docker build -t dockerallang/school-management-notification:latest .
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -22,5 +22,5 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Push base image
         run:
-          docker push ${{ secrets.DOCKER_USERNAME }}/school-management-auth-server:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/school-management-notification:latest
 
