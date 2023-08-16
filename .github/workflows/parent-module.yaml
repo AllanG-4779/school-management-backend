@@ -3,8 +3,8 @@ on:
   push:
     branches: [master]
     paths:
-      - "../../pom.xml"
-      - "./parent-module/**"
+      - "pom.xml"
+      - ".github/workflows/parent-module.yaml"
 jobs:
    build-parent-image:
      runs-on: ubuntu-latest
