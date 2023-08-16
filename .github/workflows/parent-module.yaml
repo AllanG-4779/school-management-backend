@@ -20,6 +20,5 @@ jobs:
             username: ${{ secrets.DOCKER_USERNAME }}
             password: ${{ secrets.DOCKER_PASSWORD }}
       - name: Push base image
-        needs: build-parent-image
         run:
             docker push ${{ secrets.DOCKER_USERNAME }}/school-manager-parent:latest
