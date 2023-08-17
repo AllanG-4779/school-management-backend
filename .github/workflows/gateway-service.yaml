@@ -1,4 +1,4 @@
-name: Core User Service Deployment
+name: Gateway Service Deployment
 on:
   push:
     branches: [ master ]
