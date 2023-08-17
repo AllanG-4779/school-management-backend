@@ -20,10 +20,9 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: localhost:9092
+          brokers: ${KAFKA_BROKER}
           auto-create-topics: true
           min-partition-count: 2
-
       bindings:
         createUserConsumer-in-0:
             destination: school_management_user_creation
