@@ -1,5 +1,5 @@
 server:
-  port: 5699
+  port: ${PORT:57added e00}
 spring:
   application:
     name: notification-service
@@ -7,22 +7,20 @@ spring:
     property-naming-strategy: SNAKE_CASE
   flyway:
     locations: classpath:db/migrations
-    user: allang
-    password: cnd80751xh
-    url: jdbc:mysql://localhost:3307/school_management_notification?allowPublicKeyRetrieval=true&sslMode=DISABLED
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+    url: jdbc:mysql://${DB_HOST}/${DB_NAME}?allowPublicKeyRetrieval=true&sslMode=DISABLED
   r2dbc:
-    username: allang
-    password: cnd80751xh
-    url: r2dbc:mysql://localhost:3307/school_management_notification?allowPublicKeyRetrieval=true&sslMode=DISABLED
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    url: r2dbc:mysql://${DB_HOST}/${DB_NAME}?allowPublicKeyRetrieval=true&sslMode=DISABLED
   cloud:
     function:
       definition: sendSmsConsumer
-
     stream:
       kafka:
         binder:
           brokers: ${KAFKA_BROKER:localhost:9092}
-
       bindings:
         sendSmsConsumer-in-0:
           destination: school_management_sms_topic

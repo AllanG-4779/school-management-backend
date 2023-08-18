@@ -1,17 +1,17 @@
 server:
-  port: 5698
+  port: ${PORT:5700}
 spring:
   application:
     name: auth-server
   r2dbc:
-    username: allang
-    password: cnd80751xh
-    url: r2dbc:mysql://${DB_HOST:localhost:3307}/school_management_auth?sslMode=DISABLED
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+    url: r2dbc:mysql://${DB_HOST:localhost:3307}/${DB_NAME}?sslMode=DISABLED
   flyway:
     enabled: true
-    user: allang
-    password: cnd80751xh
-    url: jdbc:mysql://${DB_HOST:localhost:3307}/school_management_auth?allowPublicKeyRetrieval=true&useSSL=false
+    user: ${DB_USER}
+    password: ${DB_PASSWORD}
+    url: jdbc:mysql://${DB_HOST:localhost:3307}/${DB_NAME}?allowPublicKeyRetrieval=true&useSSL=false
     validate-on-migrate: true
     locations: classpath:db/migration
   cloud:
