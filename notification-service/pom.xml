@@ -27,6 +27,12 @@
             <artifactId>lombok</artifactId>
         </dependency>
         <dependency>
+            <groupId>dev.miku</groupId>
+            <artifactId>r2dbc-mysql</artifactId>
+            <version>0.8.2.RELEASE</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
@@ -56,5 +62,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
