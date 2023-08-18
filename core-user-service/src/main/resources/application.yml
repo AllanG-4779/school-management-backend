@@ -19,6 +19,8 @@ spring:
       kafka:
         binder:
           brokers: ${KAFKA_BROKER:localhost:9092}
-      binders:
-        producer-in-0:
+      bindings:
+       createUserProducer-out-0:
+          destination: school_management_user_creation
+
 
