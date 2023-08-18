@@ -1,5 +1,5 @@
 server:
-  port: ${PORT:57added e00}
+  port: ${PORT:5700}
 spring:
   application:
     name: notification-service
@@ -7,13 +7,13 @@ spring:
     property-naming-strategy: SNAKE_CASE
   flyway:
     locations: classpath:db/migrations
-    user: ${DB_USER}
-    password: ${DB_PASSWORD}
-    url: jdbc:mysql://${DB_HOST}/${DB_NAME}?allowPublicKeyRetrieval=true&sslMode=DISABLED
+    user: ${DB_USER:allang}
+    password: ${DB_PASSWORD:cnd80751xh}
+    url: jdbc:mysql://${DB_HOST:localhost:3307}/${DB_NAME:school_management_notification}?allowPublicKeyRetrieval=true&sslMode=DISABLED
   r2dbc:
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    url: r2dbc:mysql://${DB_HOST}/${DB_NAME}?allowPublicKeyRetrieval=true&sslMode=DISABLED
+    username: ${DB_USER:allang}
+    password: ${DB_PASSWORD:cnd80751xh}
+    url: r2dbc:mysql://${DB_HOST:school_management_notification}/${DB_NAME:school_management_notification}?allowPublicKeyRetrieval=true&sslMode=DISABLED
   cloud:
     function:
       definition: sendSmsConsumer
