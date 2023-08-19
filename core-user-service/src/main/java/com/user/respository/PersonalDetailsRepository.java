@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 public interface PersonalDetailsRepository extends R2dbcRepository<PersonalInformation, Long> {
     Mono<Boolean> existsByEmailOrPhoneOrPersonalIdOrNationalId(String email, String phone,
                                                                   String registration, String nationaId);
-    @Query("SELECT * FROM personal_information WHERE email = :param OR phone = :param AND personal_id = :registration")
+    @Query("SELECT * FROM personal_information WHERE email = ?1 OR phone = ?1 AND personal_id = ?2")
     Mono<PersonalInformation> findByEmailOrPhoneAndPersonalId(String param, String registration);
 
 }

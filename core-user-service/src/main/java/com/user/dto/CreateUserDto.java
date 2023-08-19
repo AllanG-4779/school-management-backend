@@ -35,4 +35,5 @@ public class CreateUserDto {
     @Pattern(regexp = "^[1-9]{4}-(0?[1-9]|1[1-2])-(0?[1-9]|[1-3][0-9])$", message = "Invalid date format")
     @NotNull(message = "Date cannot be null")
     private String dob;
+
 }

@@ -21,6 +21,10 @@ import org.shared.dto.UniversalResponse;
 import org.shared.dto.UserDto;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.ReactiveTransactionManager;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.transaction.support.TransactionOperations;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -35,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final PersonalDetailsRepository personalDetailsRepository;
     private final ProfileRepository profileRepository;
     private final StreamBridge streamBridge;
+    private final ReactiveTransactionManager transactionManager;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final ActivationRepository activationRepository;
@@ -61,7 +66,8 @@ public class UserServiceImpl implements UserService {
                     .switchIfEmpty(Mono.error(new RuntimeException("Profile not found")))
                     .flatMap(profile -> {
                         PersonalInformation personal = modelMapper.map(user, PersonalInformation.class);
-                        return personalDetailsRepository.save(personal)
+                        return TransactionalOperator.create(transactionManager)
+                                .transactional(personalDetailsRepository.save(personal))
                                 .flatMap(savedInstance -> {
 //                                    Send email and phone confirmation
                                     ActivateAccount.ActivateAccountBuilder activateAccountBuilder = ActivateAccount.builder();
