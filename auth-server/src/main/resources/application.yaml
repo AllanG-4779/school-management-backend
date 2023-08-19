@@ -20,7 +20,7 @@ spring:
     stream:
       kafka:
         binder:
-          brokers: ${KAFKA_BROKER}
+          brokers: ${KAFKA_BROKER:localhost:9092}
           auto-create-topics: true
           min-partition-count: 2
       bindings:

@@ -175,7 +175,7 @@ public class UserServiceImpl implements UserService {
                                         if (personalInformation.getEmailConfirmed() && personalInformation.getPhoneConfirmed()) {
                                             savedConfirmation.setActivated(true);
                                         }
-                                        // user details to kafka to create login profile
+                                        // user details to kafka targetto create login profile
                                         UserDto asyncUser = modelMapper.map(savedConfirmation, UserDto.class);
                                         String asyncUserString;
                                         try {
