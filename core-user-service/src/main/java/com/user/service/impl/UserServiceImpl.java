@@ -21,12 +21,10 @@ import org.shared.dto.UniversalResponse;
 import org.shared.dto.UserDto;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.ReactiveTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.reactive.TransactionalOperator;
-import org.springframework.transaction.support.TransactionOperations;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.shared.utils.Constants.*;
@@ -39,10 +37,10 @@ public class UserServiceImpl implements UserService {
     private final PersonalDetailsRepository personalDetailsRepository;
     private final ProfileRepository profileRepository;
     private final StreamBridge streamBridge;
-    private final ReactiveTransactionManager transactionManager;
     private final ModelMapper modelMapper;
     private final ObjectMapper objectMapper;
     private final ActivationRepository activationRepository;
+    private final TransactionalOperator transactionalOperator;
 
     @PostConstruct
     public void configureMapper() {
@@ -52,44 +50,47 @@ public class UserServiceImpl implements UserService {
     @Override
     public Mono<UniversalResponse> createNewUser(CreateUserDto user) {
         return personalDetailsRepository.existsByEmailOrPhoneOrPersonalIdOrNationalId(
-                user.getEmail(), user.getPhone(), user.getPersonalId(), user.getNationalId()
-        ).flatMap(checkResult -> {
-            if (checkResult) {
-                return Mono.just(UniversalResponse.builder()
-                        .status("409")
-                        .error("true")
-                        .message("Duplicate details provided")
-                        .timestamp(LocalDateTime.now())
-                        .build());
-            }
-            return profileRepository.findById(user.getProfileId())
-                    .switchIfEmpty(Mono.error(new RuntimeException("Profile not found")))
-                    .flatMap(profile -> {
-                        PersonalInformation personal = modelMapper.map(user, PersonalInformation.class);
-                        return TransactionalOperator.create(transactionManager)
-                                .transactional(personalDetailsRepository.save(personal))
-                                .flatMap(savedInstance -> {
+                        user.getEmail(), user.getPhone(), user.getPersonalId(), user.getNationalId()
+                ).flatMap(checkResult -> {
+                    if (checkResult) {
+                        return Mono.just(UniversalResponse.builder()
+                                .status("409")
+                                .error("true")
+                                .message("Duplicate details provided")
+                                .timestamp(LocalDateTime.now())
+                                .build());
+                    }
+                    return profileRepository.findById(user.getProfileId())
+                            .switchIfEmpty(Mono.error(new RuntimeException("Profile not found")))
+                            .flatMap(profile -> {
+                                PersonalInformation personal = modelMapper.map(user, PersonalInformation.class);
+                                personal.setDob(LocalDate.parse(user.getDob()));
+                                return personalDetailsRepository.save(personal)
+                                        .flatMap(savedInstance -> {
 //                                    Send email and phone confirmation
-                                    ActivateAccount.ActivateAccountBuilder activateAccountBuilder = ActivateAccount.builder();
-                                    activateAccountBuilder.personalId(personal.getPersonalId());
-                                    return initiateAccountActivation(activateAccountBuilder.email(personal.getEmail()).build())
-                                            .zipWith(initiateAccountActivation(activateAccountBuilder.email(null).phone(personal.getPhone()).build()))
-                                            .flatMap((email -> Mono.just(UniversalResponse.builder()
-                                                    .timestamp(LocalDateTime.now())
-                                                    .message("User created successfully")
-                                                    .status("201")
-                                                    .error("false")
-                                                    .data(savedInstance)
-                                                    .build())));
-                                }).flatMap(Mono::just);
-                    }).flatMap(Mono::just);
-        }).flatMap(Mono::just);
+                                            ActivateAccount.ActivateAccountBuilder activateAccountBuilder = ActivateAccount.builder();
+                                            activateAccountBuilder.personalId(personal.getPersonalId());
+                                            return initiateAccountActivation(activateAccountBuilder.email(personal.getEmail()).build())
+                                                    .zipWith(initiateAccountActivation(activateAccountBuilder.email(null).phone(personal.getPhone()).build()))
+                                                    .flatMap((email -> Mono.just(UniversalResponse.builder()
+                                                            .timestamp(LocalDateTime.now())
+                                                            .message("User created successfully")
+                                                            .status("201")
+                                                            .error("false")
+                                                            .data(savedInstance)
+                                                            .build())));
+                                        }).flatMap(Mono::just);
+                            }).flatMap(Mono::just);
+                }).flatMap(Mono::just)
+                .as(transactionalOperator::transactional);
     }
 
     @Override
     public Mono<UniversalResponse> initiateAccountActivation(ActivateAccount user) {
-        String parameter = user.getEmail() != null ? user.getEmail() : user.getPhone();
-        return personalDetailsRepository.findByEmailOrPhoneAndPersonalId(parameter, user.getPersonalId())
+        Mono<PersonalInformation> personalInformationMono = user.getPhone() != null ?
+                personalDetailsRepository.findAccountByPhone(user.getPhone(), user.getPersonalId()) :
+                personalDetailsRepository.findAccountByEmail(user.getEmail(), user.getPersonalId());
+        return personalInformationMono
                 .switchIfEmpty(Mono.error(new RuntimeException("User not found")))
                 .flatMap(personalInformation -> {
                     if (personalInformation.getActivated()) {
@@ -138,6 +139,7 @@ public class UserServiceImpl implements UserService {
                             .userId(personalInformation.getId())
                             .token(token)
                             .type(user.getEmail() != null ? "EMAIL" : "PHONE")
+                            .expireAt(LocalDateTime.now().plusMinutes(5))
                             .build();
                     return activationRepository.save(activations)
                             .flatMap(savedInstance -> {
@@ -156,9 +158,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Mono<UniversalResponse> activateAccount(ActivateAccount activateAccount) {
-        String phoneOrEmail = activateAccount.getPhone() != null ? activateAccount.getPhone() : activateAccount.getEmail();
-        return personalDetailsRepository.findByEmailOrPhoneAndPersonalId(phoneOrEmail, activateAccount.getPersonalId())
+        Mono<PersonalInformation> personalInformationMono = activateAccount.getPhone() != null ?
+                personalDetailsRepository.findAccountByPhone(activateAccount.getPhone(), activateAccount.getPersonalId()) :
+                personalDetailsRepository.findAccountByEmail(activateAccount.getEmail(), activateAccount.getPersonalId());
+        return personalInformationMono
                 .switchIfEmpty(Mono.error(new RuntimeException("User details not found")))
+                .doOnError(err -> log.info("Something went wrong when fetching user details"))
                 .flatMap(personalInformation -> activationRepository.findByUserIdAndToken(personalInformation.getId(), activateAccount.getOtp())
                         .switchIfEmpty(Mono.error(new RuntimeException("Invalid verification token")))
                         .flatMap(activationInstance -> {
