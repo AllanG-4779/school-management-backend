@@ -4,6 +4,7 @@ on:
     branches: [master]
     paths:
       - "pom.xml"
+      - "shared/**"
       - ".github/workflows/parent-module.yaml"
 jobs:
    build-parent-image:
