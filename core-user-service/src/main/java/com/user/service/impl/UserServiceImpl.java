@@ -19,6 +19,7 @@ import org.shared.dto.AccountActivationBody;
 import org.shared.dto.NotificationDto;
 import org.shared.dto.UniversalResponse;
 import org.shared.dto.UserDto;
+import org.shared.exceptions.GenericException;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -162,10 +163,10 @@ public class UserServiceImpl implements UserService {
                 personalDetailsRepository.findAccountByPhone(activateAccount.getPhone(), activateAccount.getPersonalId()) :
                 personalDetailsRepository.findAccountByEmail(activateAccount.getEmail(), activateAccount.getPersonalId());
         return personalInformationMono
-                .switchIfEmpty(Mono.error(new RuntimeException("User details not found")))
+                .switchIfEmpty(Mono.error(new GenericException("User details not found")))
                 .doOnError(err -> log.info("Something went wrong when fetching user details"))
                 .flatMap(personalInformation -> activationRepository.findByUserIdAndToken(personalInformation.getId(), activateAccount.getOtp())
-                        .switchIfEmpty(Mono.error(new RuntimeException("Invalid verification token")))
+                        .switchIfEmpty(Mono.error(new GenericException("Invalid verification token")))
                         .flatMap(activationInstance -> {
                             if (!(activationInstance.getToken().equals(activateAccount.getOtp())
                                     && activationInstance.getExpireAt().isAfter(LocalDateTime.now()))) {
@@ -186,7 +187,7 @@ public class UserServiceImpl implements UserService {
                                         if (personalInformation.getEmailConfirmed() && personalInformation.getPhoneConfirmed()) {
                                             savedConfirmation.setActivated(true);
                                         }
-                                        // user details to kafka targetto create login profile
+                                        // user details to kafka target to create login profile
                                         UserDto asyncUser = modelMapper.map(savedConfirmation, UserDto.class);
                                         String asyncUserString;
                                         try {
@@ -196,7 +197,6 @@ public class UserServiceImpl implements UserService {
                                         }
                                         streamBridge.send(USER_CREATION_TOPIC, asyncUserString);
                                         log.info("Published user details successfully");
-
                                         return activationRepository.delete(activationInstance)
                                                 .flatMap(deleted -> Mono.just(UniversalResponse.builder()
                                                         .timestamp(LocalDateTime.now())
@@ -204,6 +204,12 @@ public class UserServiceImpl implements UserService {
                                                         .error("false")
                                                         .build()));
                                     }).flatMap(Mono::just);
-                        }).flatMap(Mono::just)).flatMap(Mono::just);
+                        }).flatMap(Mono::just)).flatMap(Mono::just)
+                .onErrorResume(RuntimeException.class, ex -> (Mono.just(UniversalResponse.builder()
+                        .message(ex.getMessage())
+                        .timestamp(LocalDateTime.now())
+                        .error("false")
+                        .build())))
+                .as(transactionalOperator::transactional);
     }
 }

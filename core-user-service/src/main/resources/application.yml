@@ -16,11 +16,16 @@ spring:
     property-naming-strategy: SNAKE_CASE
   cloud:
     stream:
+      function:
+        bindings:
+          producer-out-0:
       kafka:
         binder:
-          brokers: ${KAFKA_BROKER:localhost:9094}
+          brokers: ${KAFKA_BROKER:localhost:9092}
+          auto-create-topics: true
+
       bindings:
-       createUserProducer-out-0:
+        producer-out-0:
           destination: school_management_user_creation
 
 

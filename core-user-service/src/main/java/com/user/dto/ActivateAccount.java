@@ -10,9 +10,9 @@ import lombok.*;
 @NoArgsConstructor
 @Builder
 public class ActivateAccount {
-    @NotEmpty(message = "Email is required")
+
     private String email;
-    @NotEmpty(message = "Phone is required")
+
     private String phone;
     @NotEmpty(message = "OTP is required")
     private String otp;
