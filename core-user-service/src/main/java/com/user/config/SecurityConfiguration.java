@@ -14,6 +14,7 @@ public class SecurityConfiguration {
         return http.authorizeExchange(exchange -> {
                     exchange.anyExchange().permitAll();
                 })
+                .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .build();
