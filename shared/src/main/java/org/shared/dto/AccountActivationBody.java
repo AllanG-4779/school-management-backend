@@ -8,6 +8,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountActivationBody {
-    private String fullName;
+    private String name;
     private String otp;
 }
