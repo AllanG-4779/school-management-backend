@@ -12,5 +12,6 @@ CREATE TABLE IF NOT EXISTS template(
 );
 INSERT INTO  template (name, notification_type, message, created_by)
 VALUES
- ('student_registration', 'email', 'Dear {name}, your registration is successful. Your username is {username} and password is {password}.', 'system'),
- ('password_reset', 'sms', 'A password reset was initiated from your account, enter the OTP {otp} to confirm. Kindly ignore if you did not initiate this.', 'system')
+ ('new_registration', 'sms', 'Dear {name}, your registration is successful. Your username is {username}. Kindly reset your password by using your Registration Number as your first time password', 'system'),
+ ('password_reset', 'sms', 'A password reset was initiated from your account, enter the OTP {otp} to confirm. Kindly ignore if you did not initiate this.', 'system'),
+ ('activate_account', 'sms', 'Dear {name}, Welcome to School Care. Use this code {otp} to confirm your phone number.', 'system' );

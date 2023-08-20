@@ -15,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
-import org.shared.dto.AccountActivationBody;
-import org.shared.dto.NotificationDto;
-import org.shared.dto.UniversalResponse;
-import org.shared.dto.UserDto;
+import org.shared.dto.*;
 import org.shared.exceptions.GenericException;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
@@ -28,6 +25,8 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import static org.shared.Constants.CONFIRM_ACCOUNT_CREATION;
+import static org.shared.Constants.NEW_REGISTRATION;
 import static org.shared.utils.Constants.*;
 import static org.shared.utils.GeneralUtils.generateOTP;
 
@@ -130,11 +129,11 @@ public class UserServiceImpl implements UserService {
                     }
                     String token = generateOTP();
                     AccountActivationBody activation = AccountActivationBody.builder()
-                            .fullName(String.format("%s %s", personalInformation.getFirstName(),
+                            .name(String.format("%s %s", personalInformation.getFirstName(),
                                     personalInformation.getLastName()))
                             .otp(token)
                             .build();
-                    NotificationDto notification = notificationBuilder.templateName("activate_account")
+                    NotificationDto notification = notificationBuilder.templateName(CONFIRM_ACCOUNT_CREATION)
                             .message(activation).build();
                     Activations activations = Activations.builder()
                             .userId(personalInformation.getId())
@@ -188,7 +187,9 @@ public class UserServiceImpl implements UserService {
                                             savedConfirmation.setActivated(true);
                                         }
                                         // user details to kafka target to create login profile
+
                                         UserDto asyncUser = modelMapper.map(savedConfirmation, UserDto.class);
+                                        asyncUser.setPassword(savedConfirmation.getPersonalId());
                                         String asyncUserString;
                                         try {
                                             asyncUserString = objectMapper.writeValueAsString(asyncUser);
@@ -197,6 +198,19 @@ public class UserServiceImpl implements UserService {
                                         }
                                         streamBridge.send(USER_CREATION_TOPIC, asyncUserString);
                                         log.info("Published user details successfully");
+//                                      Notify user to change their password using their Registration number as one time password
+                                        NotificationDto changePasswordUpdate = NotificationDto.builder()
+                                                .type(NOTIFICATION_SMS)
+                                                .message(NotificationPayload.builder()
+                                                        .name(String.format("%s %s", savedConfirmation.getFirstName(),
+                                                                savedConfirmation.getLastName()))
+                                                        .username(savedConfirmation.getPersonalId())
+                                                        .phone(savedConfirmation.getPhone())
+                                                        .email(savedConfirmation.getEmail())
+                                                        .build())
+                                                .templateName(NEW_REGISTRATION)
+                                                .build();
+
                                         return activationRepository.delete(activationInstance)
                                                 .flatMap(deleted -> Mono.just(UniversalResponse.builder()
                                                         .timestamp(LocalDateTime.now())

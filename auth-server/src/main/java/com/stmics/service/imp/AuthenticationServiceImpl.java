@@ -10,7 +10,7 @@ import com.stmics.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.shared.dto.NotificationDto;
-import org.shared.dto.OtpSmsBody;
+import org.shared.dto.NotificationPayload;
 import org.shared.dto.UniversalResponse;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -23,6 +23,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDateTime;
 
+import static org.shared.Constants.CHANGE_PASSWORD;
 import static org.shared.utils.Constants.NOTIFICATION_SMS;
 import static org.shared.utils.Constants.SMS_TOPIC;
 import static org.shared.utils.GeneralUtils.generateOTP;
@@ -86,12 +87,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     String otp = generateOTP();
                     appUser.setPasswordResetToken(otp);
                     appUser.setPasswordResetExpiry(LocalDateTime.now().plusMinutes(5));
-
                     try {
                         streamBridge.send(SMS_TOPIC, objectMapper.writeValueAsString(NotificationDto.builder()
                                 .phone(appUser.getPhone()).type(NOTIFICATION_SMS)
-                                        .templateName("password_reset")
-                                .message(OtpSmsBody.builder()
+                                        .templateName(CHANGE_PASSWORD)
+                                .message(NotificationPayload.builder()
                                         .otp(otp)
                                         .build())
                                 .build()));
@@ -114,7 +114,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Mono<UniversalResponse> changePassword(PasswordReset passwordReset) {
-
         return authenticationRepository.findByUsername(passwordReset.getUsername())
                 .switchIfEmpty(Mono.just(AppUser.builder().build()))
                 .publishOn(Schedulers.boundedElastic())
