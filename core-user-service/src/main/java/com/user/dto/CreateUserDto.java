@@ -21,7 +21,7 @@ public class CreateUserDto {
     @NotBlank(message = "Email cannot be blank")
     private String email;
 
-    @Pattern(regexp = "\\+[1-9]{3}\\d{9}", message = "Invalid phone format")
+    @Pattern(regexp = "[1-9]{3}\\d{9}", message = "Invalid phone format")
     private String phone;
 
     @Size(min = 10, max = 16, message = "National ID too short")
