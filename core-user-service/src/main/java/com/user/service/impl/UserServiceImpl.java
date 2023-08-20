@@ -193,10 +193,12 @@ public class UserServiceImpl implements UserService {
                                             asyncUser.setUsername(savedConfirmation.getPersonalId());
                                             asyncUser.setPhone(savedConfirmation.getPhone());
                                             asyncUser.setEmail(savedConfirmation.getEmail());
+                                            asyncUser.setProfileId(savedConfirmation.getProfileId());
                                             String asyncUserString;
                                             String changePasswordUpdateString;
                                             NotificationDto changePasswordUpdate = NotificationDto.builder()
                                                     .type(NOTIFICATION_SMS)
+                                                    .phone(savedConfirmation.getPhone())
                                                     .message(NotificationPayload.builder()
                                                             .name(String.format("%s %s", savedConfirmation.getFirstName(),
                                                                     savedConfirmation.getLastName()))
