@@ -190,6 +190,9 @@ public class UserServiceImpl implements UserService {
                                             // send user details to kafka target to create login profile
                                             UserDto asyncUser = modelMapper.map(savedConfirmation, UserDto.class);
                                             asyncUser.setPassword(savedConfirmation.getPersonalId());
+                                            asyncUser.setUsername(savedConfirmation.getPersonalId());
+                                            asyncUser.setPhone(savedConfirmation.getPhone());
+                                            asyncUser.setEmail(savedConfirmation.getEmail());
                                             String asyncUserString;
                                             String changePasswordUpdateString;
                                             NotificationDto changePasswordUpdate = NotificationDto.builder()

@@ -34,6 +34,8 @@ public class AsyncOperations {
                 appUser.setIsActive(true);
                 appUser.setUsername(user.getUsername());
                 appUser.setPassword(passwordEncoder.encode(user.getPassword()));
+                appUser.setPhone(user.getPhone());
+                appUser.setEmail(user.getEmail());
                 authenticationRepository.save(appUser)
                         .flatMap(newUser -> {
                             log.info("New user created: {} at {}", newUser, LocalDateTime.now());
