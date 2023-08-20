@@ -181,36 +181,40 @@ public class UserServiceImpl implements UserService {
                             if (activationInstance.getType().equals("PHONE")) {
                                 personalInformation.setPhoneConfirmed(true);
                             }
+                            if (personalInformation.getEmailConfirmed() && personalInformation.getPhoneConfirmed()) {
+                                personalInformation.setActivated(true);
+                            }
                             return personalDetailsRepository.save(personalInformation)
                                     .flatMap(savedConfirmation -> {
-                                        if (personalInformation.getEmailConfirmed() && personalInformation.getPhoneConfirmed()) {
-                                            savedConfirmation.setActivated(true);
-                                        }
-                                        // user details to kafka target to create login profile
+                                        if (savedConfirmation.getActivated()) {
+                                            // send user details to kafka target to create login profile
+                                            UserDto asyncUser = modelMapper.map(savedConfirmation, UserDto.class);
+                                            asyncUser.setPassword(savedConfirmation.getPersonalId());
+                                            String asyncUserString;
+                                            String changePasswordUpdateString;
+                                            NotificationDto changePasswordUpdate = NotificationDto.builder()
+                                                    .type(NOTIFICATION_SMS)
+                                                    .message(NotificationPayload.builder()
+                                                            .name(String.format("%s %s", savedConfirmation.getFirstName(),
+                                                                    savedConfirmation.getLastName()))
+                                                            .username(savedConfirmation.getPersonalId())
+                                                            .phone(savedConfirmation.getPhone())
+                                                            .email(savedConfirmation.getEmail())
+                                                            .build())
+                                                    .templateName(NEW_REGISTRATION)
+                                                    .build();
+                                            try {
+                                                asyncUserString = objectMapper.writeValueAsString(asyncUser);
+                                                changePasswordUpdateString = objectMapper.writeValueAsString(changePasswordUpdate);
 
-                                        UserDto asyncUser = modelMapper.map(savedConfirmation, UserDto.class);
-                                        asyncUser.setPassword(savedConfirmation.getPersonalId());
-                                        String asyncUserString;
-                                        try {
-                                            asyncUserString = objectMapper.writeValueAsString(asyncUser);
-                                        } catch (JsonProcessingException e) {
-                                            return Mono.error(new RuntimeException(e));
+                                            } catch (JsonProcessingException e) {
+                                                return Mono.error(new GenericException("Serialization error occurred"));
+                                            }
+                                            streamBridge.send(USER_CREATION_TOPIC, asyncUserString);
+                                            log.info("Published user details successfully");
+//                                          Notify user to change their password using their Registration number as one time password
+                                            streamBridge.send(SMS_TOPIC, changePasswordUpdateString);
                                         }
-                                        streamBridge.send(USER_CREATION_TOPIC, asyncUserString);
-                                        log.info("Published user details successfully");
-//                                      Notify user to change their password using their Registration number as one time password
-                                        NotificationDto changePasswordUpdate = NotificationDto.builder()
-                                                .type(NOTIFICATION_SMS)
-                                                .message(NotificationPayload.builder()
-                                                        .name(String.format("%s %s", savedConfirmation.getFirstName(),
-                                                                savedConfirmation.getLastName()))
-                                                        .username(savedConfirmation.getPersonalId())
-                                                        .phone(savedConfirmation.getPhone())
-                                                        .email(savedConfirmation.getEmail())
-                                                        .build())
-                                                .templateName(NEW_REGISTRATION)
-                                                .build();
-
                                         return activationRepository.delete(activationInstance)
                                                 .flatMap(deleted -> Mono.just(UniversalResponse.builder()
                                                         .timestamp(LocalDateTime.now())
@@ -218,12 +222,14 @@ public class UserServiceImpl implements UserService {
                                                         .error("false")
                                                         .build()));
                                     }).flatMap(Mono::just);
-                        }).flatMap(Mono::just)).flatMap(Mono::just)
+                        }).flatMap(Mono::just))
+                .flatMap(Mono::just)
                 .onErrorResume(RuntimeException.class, ex -> (Mono.just(UniversalResponse.builder()
                         .message(ex.getMessage())
                         .timestamp(LocalDateTime.now())
                         .error("false")
                         .build())))
-                .as(transactionalOperator::transactional);
+                .as(transactionalOperator::transactional)
+                .flatMap(Mono::just);
     }
 }
