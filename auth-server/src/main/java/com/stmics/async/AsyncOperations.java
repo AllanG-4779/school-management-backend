@@ -31,7 +31,7 @@ public class AsyncOperations {
             try {
                 UserDto user = objectMapper.readValue(message, UserDto.class);
                 AppUser appUser = new AppUser();
-                appUser.setIsActive(true);
+                appUser.setIsActive(false);
                 appUser.setUsername(user.getUsername());
                 appUser.setPassword(passwordEncoder.encode(user.getPassword()));
                 appUser.setPhone(user.getPhone());

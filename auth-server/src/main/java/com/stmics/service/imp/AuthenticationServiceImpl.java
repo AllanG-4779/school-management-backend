@@ -41,36 +41,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Mono<UniversalResponse> authenticateUser(LoginRequest loginRequest) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
-                loginRequest.getPassword());
-        UniversalResponse universalResponse = UniversalResponse.builder()
-                .error("true")
-                .message("Login failed")
-                .status("401")
-                .timestamp(LocalDateTime.now())
-                .build();
-        return authenticationManager.authenticate(authentication)
-                .flatMap(auth -> {
-                    String accessToken = jwtService.generateAccessToken(auth);
-                    String refreshToken = jwtService.generateRefreshToken(auth);
-                    LoginResponse loginResponse = LoginResponse.builder()
-                            .accessToken(accessToken)
-                            .refreshToken(refreshToken)
+        return authenticationRepository.findByUsername(loginRequest.getUsername())
+                .switchIfEmpty(Mono.error(new RuntimeException("Wrong credentials, please try again")))
+                .flatMap(appUser -> {
+                    if (!appUser.getIsActive()) {
+                        return Mono.error(new RuntimeException("Account not activated, please update your password"));
+                    }
+                    Authentication authentication = new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+                            loginRequest.getPassword());
+                    UniversalResponse universalResponse = UniversalResponse.builder()
+                            .error("true")
+                            .message("Login failed")
+                            .status("401")
+                            .timestamp(LocalDateTime.now())
                             .build();
-                    universalResponse.setError("false");
-                    universalResponse.setMessage("Login successful");
-                    universalResponse.setStatus("200");
-                    universalResponse.setData(loginResponse);
-                    universalResponse.setTimestamp(LocalDateTime.now());
-                    return Mono.just(universalResponse);
-                })
-                .doOnError(err -> {
-                    universalResponse.setMessage("Login failed: " + err.getMessage());
-                    log.error("Error authenticating user {}", err.getMessage());
-                })
-                .onErrorReturn(universalResponse);
+                    return authenticationManager.authenticate(authentication)
+                            .flatMap(auth -> {
+                                String accessToken = jwtService.generateAccessToken(auth);
+                                String refreshToken = jwtService.generateRefreshToken(auth);
+                                LoginResponse loginResponse = LoginResponse.builder()
+                                        .accessToken(accessToken)
+                                        .refreshToken(refreshToken)
+                                        .build();
+                                universalResponse.setError("false");
+                                universalResponse.setMessage("Login successful");
+                                universalResponse.setStatus("200");
+                                universalResponse.setData(loginResponse);
+                                universalResponse.setTimestamp(LocalDateTime.now());
+                                return Mono.just(universalResponse);
+                            })
+                            .doOnError(err -> {
+                                universalResponse.setMessage("Login failed: " + err.getMessage());
+                                universalResponse.setTimestamp(LocalDateTime.now());
+                            });
+                });
     }
-
     @Override
     public Mono<UniversalResponse> resetPassword(String username) {
         return authenticationRepository.findByUsername(username)
@@ -181,6 +186,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     appUser.setPasswordResetToken(null);
                     appUser.setPasswordResetExpiry(null);
                     appUser.setPasswordResetAttempts(0);
+                    appUser.setIsActive(true);
                     appUser.setIsLocked(false);
                     return authenticationRepository.save(appUser)
                             .flatMap(appUser1 -> Mono.just(UniversalResponse.builder()
